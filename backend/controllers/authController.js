@@ -1,5 +1,6 @@
 const User = require('../models/User');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Sign in controller
 exports.signIn = async (req, res) => {
@@ -20,20 +21,28 @@ exports.signIn = async (req, res) => {
         }
 
         // Check password
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await user.comparePassword(password);
         console.log('Password match:', isMatch);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // Return user data
+        // Generate token
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET || 'your_jwt_secret_key_here',
+            { expiresIn: '24h' }
+        );
+
+        // Return user data and token
         res.json({
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role
-            }
+            },
+            token
         });
     } catch (error) {
         console.error('Sign in error:', error);
@@ -70,14 +79,22 @@ exports.signUp = async (req, res) => {
         await user.save();
         console.log('User saved successfully');
 
-        // Return user data
+        // Generate token
+        const token = jwt.sign(
+            { userId: user._id },
+            process.env.JWT_SECRET || 'your_jwt_secret_key_here',
+            { expiresIn: '24h' }
+        );
+
+        // Return user data and token
         res.status(201).json({
             user: {
                 id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role
-            }
+            },
+            token
         });
     } catch (error) {
         console.error('Sign up error:', error);

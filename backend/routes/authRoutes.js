@@ -6,23 +6,9 @@ const authController = require('../controllers/authController');
 console.log('Setting up auth routes...');
 
 // Auth routes
-router.post('/signin', (req, res, next) => {
-    console.log('Signin route hit with data:', { email: req.body.email });
-    authController.signIn(req, res, next);
-});
-
-router.post('/signup', (req, res, next) => {
-    console.log('Signup route hit with data:', { 
-        name: req.body.name,
-        email: req.body.email 
-    });
-    authController.signUp(req, res, next);
-});
-
-router.get('/user/:userId', (req, res, next) => {
-    console.log('Get user route hit with userId:', req.params.userId);
-    authController.getCurrentUser(req, res, next);
-});
+router.post('/signin', authController.signIn);
+router.post('/signup', authController.signUp);
+router.get('/user/:userId', authController.getCurrentUser);
 
 // Log available routes
 console.log('Auth routes configured:');

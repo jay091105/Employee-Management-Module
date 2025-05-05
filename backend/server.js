@@ -18,13 +18,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Connection
 console.log('Attempting to connect to MongoDB...');
-mongoose.connect('mongodb+srv://jay:jay212530@cluster0.qjastib.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    ssl: true,
-    tls: true,
-    tlsAllowInvalidCertificates: true,
-    tlsAllowInvalidHostnames: true
+mongoose.connect('mongodb+srv://jay:jay212530@cluster0.qjastib.mongodb.net/?retryWrites=true&w=majority', {
+   
 })
 .then(() => {
     console.log('Connected to MongoDB');
