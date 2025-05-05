@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
@@ -9,6 +9,12 @@ import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import { useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import SignIn from './pages/SignIn';
+import SignUp from './pages/SignUp';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Pages
 import Login from './pages/Login';
@@ -20,7 +26,6 @@ import EmployeeDetails from './pages/EmployeeDetails';
 
 // Components
 import PrivateRoute from './components/PrivateRoute';
-import AdminRoute from './components/AdminRoute';
 
 const theme = createTheme({
   palette: {
@@ -34,7 +39,17 @@ const theme = createTheme({
 });
 
 const Layout = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { currentUser, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
+  const handleSignOut = () => {
+    signOut();
+    navigate('/signin');
+  };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
@@ -43,30 +58,30 @@ const Layout = ({ children }) => {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             Employee Management
           </Typography>
-          {user ? (
+          {currentUser ? (
             <>
-              <Button color="inherit" href="/">
+              <Button color="inherit" onClick={() => handleNavigation('/dashboard')}>
                 Dashboard
               </Button>
-              <Button color="inherit" href="/employees">
+              <Button color="inherit" onClick={() => handleNavigation('/employees')}>
                 Employees
               </Button>
-              {user.role === 'admin' && (
-                <Button color="inherit" href="/employees/new">
+              {currentUser.role === 'admin' && (
+                <Button color="inherit" onClick={() => handleNavigation('/employees/new')}>
                   Add Employee
                 </Button>
               )}
-              <Button color="inherit" onClick={logout}>
-                Logout
+              <Button color="inherit" onClick={handleSignOut}>
+                Sign Out
               </Button>
             </>
           ) : (
             <>
-              <Button color="inherit" href="/login">
-                Login
+              <Button color="inherit" onClick={() => handleNavigation('/signin')}>
+                Sign In
               </Button>
-              <Button color="inherit" href="/register">
-                Register
+              <Button color="inherit" onClick={() => handleNavigation('/signup')}>
+                Sign Up
               </Button>
             </>
           )}
@@ -90,63 +105,68 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route
-            path="/"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <Dashboard />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/employees"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <EmployeeList />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/employees/new"
-            element={
-              <AdminRoute>
-                <Layout>
-                  <EmployeeForm />
-                </Layout>
-              </AdminRoute>
-            }
-          />
-          <Route
-            path="/employees/:id"
-            element={
-              <PrivateRoute>
-                <Layout>
-                  <EmployeeDetails />
-                </Layout>
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/employees/:id/edit"
-            element={
-              <AdminRoute>
-                <Layout>
-                  <EmployeeForm />
-                </Layout>
-              </AdminRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Router>
+      <AuthProvider>
+        <Router>
+          <Routes>
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password/:token" element={<ResetPassword />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Dashboard />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employees"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmployeeList />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employees/new"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmployeeForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employees/:id"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmployeeDetails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/employees/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmployeeForm />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </Router>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

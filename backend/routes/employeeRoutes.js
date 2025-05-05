@@ -8,14 +8,17 @@ const {
   deleteEmployee,
   searchEmployees
 } = require('../controllers/employeeController');
-const { auth, adminAuth } = require('../middleware/auth');
+const { auth } = require('../middleware/auth');
+
+// Public route
+router.post('/', createEmployee);
 
 // Protected routes
-router.get('/', auth, getAllEmployees);
-router.get('/search', auth, searchEmployees);
-router.get('/:id', auth, getEmployeeById);
-router.post('/', auth, adminAuth, createEmployee);
-router.put('/:id', auth, adminAuth, updateEmployee);
-router.delete('/:id', auth, adminAuth, deleteEmployee);
+router.use(auth);
+router.get('/', getAllEmployees);
+router.get('/search', searchEmployees);
+router.get('/:id', getEmployeeById);
+router.put('/:id', updateEmployee);
+router.delete('/:id', deleteEmployee);
 
 module.exports = router; 

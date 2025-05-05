@@ -3,10 +3,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const AdminRoute = ({ children }) => {
-  const { user } = useAuth();
+  const { currentUser } = useAuth();
 
-  if (!user || user.role !== 'admin') {
-    return <Navigate to="/" replace />;
+  if (!currentUser || currentUser.role !== 'admin') {
+    return <div style={{ color: 'red', textAlign: 'center', marginTop: '2rem' }}>Access Denied: Admins Only</div>;
   }
 
   return children;
